@@ -1,37 +1,12 @@
-
-# Requires: pee (package moreutils)
-
-kctx () {
-    # Set current context ($KUBECONFIG).
-    if [ "$1" = "-e" ] ; then
-        kubectl config use-context "$2"
-    else
-      kubectl config get-contexts  | cut -c11- \
-          | pee 'head -1' 'tail -n+2 | sort' \
-          | fzf +m --no-sort --header-lines=1 --height=40% -n1 --prompt="context > " \
-          | awk '{print $1}' \
-          | xargs --no-run-if-empty \
-              kubectl config use-context
-      # cut -c11- : column 'CURRENT' must be removed; counts as 1 field when 
-      #       has '*' and 0 fields otherwise.
-      # pee: used to sort bypassing the first line.
-    fi
-}
-
-kns () {
-    # Set default namespace in current context ($KUBECONFIG).
-    if [ "$1" = "-e" ] ; then
-        kubectl config set-context "$(kubectl config current-context)" \
-            --namespace "$2"
-    else
-      kubectl get ns \
-          | fzf --header-lines=1 --height=40% --prompt="$(kubectl config current-context):namespace > " \
-          | awk '{print $1}' \
-          | xargs --no-run-if-empty \
-              kubectl config set-context "$(kubectl config current-context)" --namespace
-    fi
-}
-
+#!/bin/bash
+# kubefzf.bash
+#
+# Install: add to your .bashrc
+#
+#     source your/path/to/kubefzf.bash
+#     bind -x '"\ek":"_kube_fzf_resource_selector"'
+#
+# Usage: just press 'Alt k'.
 
 _kubernetes_resources_names () {
     cat <<.
@@ -77,9 +52,8 @@ all
 
 }
 
-
-k8set () {
-    local resource namespace context out pre post
+_kube_fzf_resource_selector () {
+    local resource namespace context out prefix pre_line post_line
 
     # trim="${READLINE_LINE%% }"    # trim spaces at end of line, just in case
 
@@ -109,6 +83,3 @@ k8set () {
     READLINE_LINE="${pre_line}${out}${post_line}"
     READLINE_POINT=$(( ${#pre_line} + ${#out} ))
 }
-
-# Run k8set on Alt-k.
-bind -x '"\ek":"k8set"'
