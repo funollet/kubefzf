@@ -2,8 +2,6 @@
 # kctx
 #
 # Set current context ($KUBECONFIG).
-#
-# Requires: pee (package moreutils)
 
 # Explicit: use param from command-line.
 if [ "$1" = "-e" ] ; then
@@ -11,11 +9,11 @@ if [ "$1" = "-e" ] ; then
     exit
 fi
 
-kubectl config get-contexts  | cut -c11- \
-    | pee 'head -1' 'tail -n+2 | sort' \
-    | fzf +m --no-sort --header-lines=1 --height=40% -n1 --prompt="context > " \
+header=$(kubectl config get-contexts | head -1 | cut -c11-)
+
+kubectl config get-contexts --no-headers | cut -c11- | sort\
+    | fzf +m --no-sort --header="${header}" --height=40% -n1 --prompt="context > " \
     | awk '{print $1}' \
     | xargs --no-run-if-empty kubectl config use-context
 # cut -c11- : column 'CURRENT' must be removed; counts as 1 field when 
 #       has '*' and 0 fields otherwise.
-# pee: used to sort bypassing the first line.
