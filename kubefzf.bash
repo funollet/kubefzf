@@ -67,10 +67,13 @@ _kube_fzf_resource_selector () {
     # Alternative: pass namespace on current readline, preceded by '-n'.
     # namespace=$(echo $READLINE_LINE | sed 's/.* -n //;s/ .*//')
     case "${READLINE_LINE}" in
-        *" log "*|*" logs "*|*" exec "*)
-            prefix="" ;;
-        *)
-            prefix="${resource}/" ;;
+        *" log "*)          prefix="" ;;
+        *" logs "*)         prefix="" ;;
+        *" exec "*)         prefix="" ;;
+        *" port-forward "*) prefix="" ;;
+        *" top pod "*)      prefix="" ;;
+        *" top node "*)     prefix="" ;;
+        *)                  prefix="${resource}/" ;;
     esac
 
 
