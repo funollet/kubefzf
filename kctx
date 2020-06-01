@@ -9,9 +9,10 @@ if [ "$1" = "-e" ] ; then
     exit
 fi
 
+start_column=$(kubectl config get-contexts --no-headers | grep -b -o '[^[:space:]+*]*' | head -1 | awk 'BEGIN {FS=":"}{print $1}')
 header=$(kubectl config get-contexts | head -1 | cut -c11-)
 
-kubectl config get-contexts --no-headers | cut -c11- | sort\
+kubectl config get-contexts --no-headers | cut -c"$((start_column+1))"- | sort\
     | fzf +m --no-sort --header="${header}" --height=40% -n1 --prompt="context > " \
     | awk '{print $1}' \
     | xargs --no-run-if-empty kubectl config use-context
